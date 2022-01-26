@@ -32,9 +32,9 @@ def get_content(soup: BeautifulSoup | Tag, selector, default="") -> str:
 
 async def save_image(session, outdir: str, image_url: str, image_file: str):
     async with session.get(image_url, headers=UA_HEADERS) as resp:
-        log.debug("image", url=image_url, file=image_file, status=resp.status)
+        # log.debug("image", url=image_url, file=image_file, status=resp.status)
         if resp.status == 200:
-            fimg = await aiofiles.open(f"{outdir}/{image_file}", "wb")
+            fimg = await aiofiles.open(f"{outdir}/img/{image_file}", "wb")
             await fimg.write(await resp.read())
             await fimg.close()
 
@@ -121,6 +121,7 @@ async def main(edition_id: int, outdir: str, writer: Writer):
                     )
                     tasks.append(task)
                 await asyncio.gather(*tasks)
+    log.debug("main", edition_id=edition_id, outdir=outdir)
 
 
 if __name__ == "__main__":
@@ -132,6 +133,7 @@ if __name__ == "__main__":
 
     outdir = f"output/bzb/{args.edition_id}"
     os.makedirs(outdir, exist_ok=True)
+    os.makedirs(outdir + "/img", exist_ok=True)
     fout = open(outdir + f"/articles-bzb-{args.edition_id}.jsonl", "w")
     writer = Writer(fout)
     asyncio.run(
