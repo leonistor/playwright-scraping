@@ -12,6 +12,8 @@ lxml = "*"
 asyncio = "*"
 aiofiles = "*"
 jsonlines = "*"
+tqdm = "*"
+structlog = "*"
 
 [dev-packages]
 

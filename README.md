@@ -32,3 +32,8 @@ my playground: https://replit.com/@leonistor/SplendidNauticalGame#main.py
 
 - cheatsheet1: http://akul.me/blog/2016/beautifulsoup-cheatsheet/
 - cheatsheet2: https://gist.github.com/yoki/b7f2fcef64c893e307c4c59303ead19a
+
+## asyncio scraping
+
+-  https://gist.github.com/madjar/9312452?permalink_comment_id=3494305#gistcomment-3494305
+- https://github.com/leimao/Ramachandran/blob/v0.0.2/ramachandran/download.py#L104
