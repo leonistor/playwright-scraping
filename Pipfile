@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+playwright = "*"
+loguru = "*"
+aiohttp = {extras = ["speedups"], version = "*"}
+beautifulsoup4 = "*"
+lxml = "*"
+asyncio = "*"
+aiofiles = "*"
+jsonlines = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
