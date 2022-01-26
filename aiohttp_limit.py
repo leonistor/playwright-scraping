@@ -35,7 +35,7 @@ async def parse_book(url: str, session: aiohttp.ClientSession):
                 "url": url,
                 "title": title,
             }
-            log.msg("book ok", book=book)
+            # log.msg("book ok", book=book)
         else:
             book = {
                 "url": url,
@@ -58,7 +58,7 @@ async def book_links_from_page(url: str, session: aiohttp.ClientSession):
 async def main():
     page_urls = [
         f"https://books.toscrape.com/catalogue/page-{index}.html"
-        for index in range(1, 6)
+        for index in range(1, 51)
     ]
 
     tasks = []
