@@ -1,12 +1,11 @@
 import asyncio
-from distutils.log import debug
 import aiohttp
 import aiofiles
 import os
 
 from random import randint
 from structlog import get_logger
-from tap import Tap
+from devtools import debug
 from jsonlines import Writer
 
 from bs4 import BeautifulSoup
@@ -14,8 +13,10 @@ from bs4.element import Tag
 
 """ const """
 MAX_NUM_CONNECTIONS = 5
-BASE_URL = "https://www.contemporanul.ro/"
+BASE_URL = "https://www.contemporanul.ro"
 OUTDIR = "output/contemporanul/"
+VALID_YEARS = [str(year) for year in range(2014, 2022)]
+
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
@@ -81,13 +82,27 @@ async def page_soup(session: aiohttp.ClientSession, url: str) -> BeautifulSoup:
     return soup
 
 
-async def parse_archive():
-    """parse archive page and get links to edtions"""
-    pass
+def is_valid_year(tag: Tag) -> bool:
+    text = tag.getText()
+    year = text.split(" ")[-1]
+    return year in VALID_YEARS
 
 
 async def main():
-    pass
+    connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
+    session = aiohttp.ClientSession(connector=connector)
+
+    # parse archive page and get links to edtions
+    archive = await page_soup(session, f"{BASE_URL}/arhiva")
+    all_years = archive.select("ul.children li a")
+    years = list(filter(is_valid_year, all_years))
+    # editions =
+    debug(years)
+
+    debug(type(years[0]))
+
+    await session.close()
+    # -
 
 
 if __name__ == "__main__":
