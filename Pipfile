@@ -17,6 +17,7 @@ structlog = "*"
 typed-argument-parser = "*"
 
 [dev-packages]
+pxpx = "*"
 
 [requires]
 python_version = "3.10"

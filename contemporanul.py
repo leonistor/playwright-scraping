@@ -54,7 +54,13 @@ async def save_image(session, outdir: str, image_url: str, image_file: str):
 
 
 def get_article_links(soup: BeautifulSoup):
-    pass
+    result = []
+    link_tags = soup.select("article.item-list h2 a")
+    # log.debug("link_tags", link_tags=link_tags)
+    for link_tag in link_tags:
+        link = link_tag.get("href")
+        result.append(link)
+    return result
 
 
 async def get_luna(luna: str, an: int, outdir: str):
@@ -63,7 +69,7 @@ async def get_luna(luna: str, an: int, outdir: str):
     # writer.write({"an": an, "luna": luna, "test": "yes"})
     # a "luna" (edition) has about 3 pages listing links to articles
     luna_url = f"{BASE_URL}numere/nr-{luna}-{LNAMES[luna]}-{an}"
-    log.debug("luna", when={"an": an, "luna": luna, "url": luna_url})
+    log.debug("luna", when={"an": an, "luna": luna})
     # get article links from all the pages of edition
     article_links = []
     num_pages = None
@@ -84,8 +90,22 @@ async def get_luna(luna: str, an: int, outdir: str):
         log.error("oops, invalid num_pages", span_pages=span_pages)
         raise e
     log.debug("num_pages", num_pages=num_pages)
-    # TODO: from first page eliminate first item, is archive
     # for this and next pages extend article_links
+    page_article_links = get_article_links(soup)
+    # from first page eliminate first item, is archive
+    page_article_links = list(
+        filter(
+            lambda l: not l.startswith(
+                "https://www.contemporanul.ro/arhiva-contemporanul/"
+            ),
+            page_article_links,
+        )
+    )
+    article_links.extend(page_article_links)
+    for page in range(1, num_pages + 1):
+        pass
+    # log.debug("article links", al=page_article_links[:3])
+    # -
 
 
 async def main(an: int, outdir: str):
