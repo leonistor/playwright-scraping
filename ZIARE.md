@@ -19,6 +19,7 @@ arhiva: https://bzb.ro/arhiva/2020#archive
 - 2009: `for i in (seq 4085 4387); python bzb.py --edition $i; end`
 - 2008: `for i in (seq 3780 4084); python bzb.py --edition $i; end`
 - 2007: `for i in (seq 3480 3779); python bzb.py --edition $i; end`
+- 2006: `for i in (seq 3177 3479); python bzb.py --edition $i; end`
 
 ## Contemporanul
 

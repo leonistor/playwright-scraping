@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 """ const """
-MAX_NUM_CONNECTIONS = 5
+MAX_NUM_CONNECTIONS = 3
 BASE_URL = "https://www.contemporanul.ro/"
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
@@ -63,6 +63,14 @@ def get_article_links(soup: BeautifulSoup):
     return result
 
 
+async def page_soup(session: aiohttp.ClientSession, url: str) -> BeautifulSoup:
+    async with session.get(url, headers=UA_HEADERS) as resp:
+        soup = BeautifulSoup(await resp.text(), "lxml")
+    if "august" in url:
+        log.debug("wtf", resp=resp.status, sp=soup.select("span.pages"))
+    return soup
+
+
 async def get_luna(luna: str, an: int, outdir: str):
     fout = open(outdir + f"/contemporanul-{an}-{luna}.jsonl", "w")
     writer = Writer(fout)
@@ -70,19 +78,22 @@ async def get_luna(luna: str, an: int, outdir: str):
     # a "luna" (edition) has about 3 pages listing links to articles
     luna_url = f"{BASE_URL}numere/nr-{luna}-{LNAMES[luna]}-{an}"
     log.debug("luna", when={"an": an, "luna": luna})
+
+    connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
+    session = aiohttp.ClientSession(connector=connector)
+
     # get article links from all the pages of edition
     article_links = []
     num_pages = None
     # get  first page
-    connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
-    async with aiohttp.ClientSession(connector=connector) as session:
-        async with session.get(luna_url, headers=UA_HEADERS) as resp:
-            soup = BeautifulSoup(await resp.text(), "lxml")
+    # async with session.get(luna_url, headers=UA_HEADERS) as resp:
+    #     soup = BeautifulSoup(await resp.text(), "lxml")
+    soup = await page_soup(session, luna_url)
+    if luna == "08":
+        log.debug("august", soup=soup)
     # get num_pages from 'Page x of y'
-    span_pages = get_content(
-        soup,
-        "#main-content > div.content-wrap > div > div.pagination > span.pages",
-    )
+    span_pages = get_content(soup, "span.pages")
+    log.debug("oops num_pages", span_pages=span_pages)
     span_num_pages = span_pages.split(" ")[-1]
     try:
         num_pages = int(span_num_pages)
@@ -102,9 +113,16 @@ async def get_luna(luna: str, an: int, outdir: str):
         )
     )
     article_links.extend(page_article_links)
-    for page in range(1, num_pages + 1):
-        pass
-    # log.debug("article links", al=page_article_links[:3])
+    # process pages 2 -> num_pages
+    for page in range(2, num_pages + 1):
+        page_url = f"{luna_url}/page/{page}"
+        soup = await page_soup(session, page_url)
+        page_article_links = get_article_links(soup)
+        article_links.extend(page_article_links)
+        log.debug("article links", page=page)
+        log.debug("article links", article_links_len=len(article_links))
+
+    await session.close()
     # -
 
 
@@ -112,8 +130,7 @@ async def main(an: int, outdir: str):
     luni = []
     for i in range(1, 13):
         luni.append("{:02d}".format(i))
-    # TODO: debug
-    for luna in luni[:3]:
+    for luna in luni:
         await get_luna(luna, an, outdir)
 
 
