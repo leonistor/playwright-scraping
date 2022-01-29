@@ -1,3 +1,11 @@
+"""
+Parses 'contemporanul.ro' archive and writes articles urls
+to input/articles-contemporanul.txt.
+It looks only into VALID_YEARS, since older editions are empty:
+missing pdfs.
+'articles_contemporanul.py' will use this list to download data.
+"""
+
 import asyncio
 import aiohttp
 import aiofiles
@@ -5,8 +13,6 @@ import os
 
 from random import randint
 from structlog import get_logger
-from devtools import debug
-from jsonlines import Writer
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -14,10 +20,8 @@ from bs4.element import Tag
 """ const """
 MAX_NUM_CONNECTIONS = 5
 BASE_URL = "https://www.contemporanul.ro"
-OUTDIR = "output/contemporanul/"
-# VALID_YEARS = [str(year) for year in range(2014, 2022)]
-# DEBUG
-VALID_YEARS = [str(year) for year in range(2014, 2016)]
+OUTFILE = "input/articles-contemporanul.txt"
+VALID_YEARS = [str(year) for year in range(2014, 2022)]
 
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
@@ -44,7 +48,6 @@ def get_content(soup: BeautifulSoup | Tag, selector, default="") -> str:
 async def save_image(session, outdir: str, image_url: str, image_file: str):
     await delay()
     async with session.get(image_url, headers=UA_HEADERS) as resp:
-        # log.debug("image", url=image_url, file=image_file, status=resp.status)
         if resp.status == 200:
             fimg = await aiofiles.open(f"{outdir}/img/{image_file}", "wb")
             await fimg.write(await resp.read())
@@ -73,7 +76,7 @@ async def get_edition_articles(session: aiohttp.ClientSession, url: str):
     result = []
     num_pages = None
 
-    log.debug("edition", url=url)
+    log.info("edition", url=url)
 
     # process first page of edition
     first_soup = await page_soup(session, url)
@@ -112,15 +115,6 @@ def is_valid_year(tag: Tag) -> bool:
 
 
 async def main():
-
-    # TODO
-    # -----------------
-    # - year param back
-    # - global outdir aici
-    # - task pool din articole
-    # - fara poze?
-    # -----------------
-
     connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
     session = aiohttp.ClientSession(connector=connector)
 
@@ -145,12 +139,15 @@ async def main():
         )
         articles.extend(edition_articles)
 
-    debug(articles)
+    # debug(articles)
+    with open(OUTFILE, "w") as fout:
+        output = "\n".join(articles)
+        fout.write(output)
+    log.info("voila!", outfile=OUTFILE)
     await session.close()
     # -
 
 
 if __name__ == "__main__":
-    os.makedirs(OUTDIR, exist_ok=True)
 
     asyncio.run(main())
