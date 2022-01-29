@@ -112,6 +112,15 @@ def is_valid_year(tag: Tag) -> bool:
 
 
 async def main():
+
+    # TODO
+    # -----------------
+    # - year param back
+    # - global outdir aici
+    # - task pool din articole
+    # - fara poze?
+    # -----------------
+
     connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
     session = aiohttp.ClientSession(connector=connector)
 
