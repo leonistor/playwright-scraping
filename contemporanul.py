@@ -74,7 +74,7 @@ def get_page_articles(soup: BeautifulSoup):
 async def get_edition_articles(session: aiohttp.ClientSession, url: str):
     """list of article links in an edition with multiple pages"""
     result = []
-    num_pages = None
+    num_pages = 0
 
     log.info("edition", url=url)
 
@@ -86,23 +86,25 @@ async def get_edition_articles(session: aiohttp.ClientSession, url: str):
     try:
         num_pages = int(span_num_pages)
     except ValueError as e:
-        log.error("oops, invalid num_pages", span_pages=span_pages)
-        raise e
+        log.error("edition with no pages!", span_pages=span_pages)
+        pass
+        # raise e
 
     log.debug("edition", num_pages=num_pages)
 
     # articles for first page
     result.extend(get_page_articles(first_soup))
 
-    # build urls of pages
-    pages_urls = [url]
-    for page in range(2, num_pages + 1):
-        pages_urls.append(f"{url}/page/{page}")
-    # extract articles from each page
-    for page_url in pages_urls:
-        soup = await page_soup(session, page_url)
-        log.debug("page", page_url=page_url)
-        result.extend(get_page_articles(soup))
+    if num_pages > 0:
+        # build urls of pages
+        pages_urls = [url]
+        for page in range(2, num_pages + 1):
+            pages_urls.append(f"{url}/page/{page}")
+        # extract articles from each page
+        for page_url in pages_urls:
+            soup = await page_soup(session, page_url)
+            log.debug("page", page_url=page_url)
+            result.extend(get_page_articles(soup))
 
     return result
     # -
