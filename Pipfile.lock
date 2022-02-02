@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e3dd99eb0ee0b22fbddc92c7e5784cc206d9a3cf8f33a36ceb7b6a68d5d85589"
+            "sha256": "6731a2a8e5a217ec0d3b3c916ab1145c7d6723a221d260a06e5173cb871f03fb"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -608,16 +608,13 @@
         },
         "playwright": {
             "hashes": [
-                "sha256:528470e89827b09524acb197634381f62483c15b78dcbedc85528e0b727e705f",
-                "sha256:7ae5f8e6ae820d44b6fe04f94c261047536ee75724a032f2dd2be94c952303ed",
-                "sha256:84572ba1d04cb3e31e30181fa4fa09ca64d7841af19e98ff221259e2d6a108e6",
-                "sha256:917b8472cab589cece536ae97491b4f124b324642190985440737d1fe8a55764",
-                "sha256:a5ce9c42e6108b5aeb63fdfefe2adbb9d0d85c1cba389bf7da0c56d1a6aa874e",
-                "sha256:d8a8d944da91f77c0a66d23e51bf8aa142a38820da8e70cf13b68636ee343346",
-                "sha256:e47ebe9d55a3d8e320b63aa688b671d9e40e50c906315cb225f20ffe7503b35d"
+                "sha256:0d69764ea9a216ce933eb5679ff6aa6399e7e9e43360809ec261549741e1b8d6",
+                "sha256:425c475b65562a6a2f7d46c5dcaa13d8ff098da101a100600016d320325ec436",
+                "sha256:5b512d0d734a2b6bc001461fdf1cc65e5ef1c8489187d03f6a7c0ed3552fe469",
+                "sha256:75aacc73bdfb6c6832e7a09f3e9d356db0e2bd8f18d719b068c17c841c0a5507"
             ],
             "index": "pypi",
-            "version": "==1.18.1"
+            "version": "==1.18.2"
         },
         "pycares": {
             "hashes": [
@@ -664,10 +661,10 @@
         },
         "pyee": {
             "hashes": [
-                "sha256:581efd42af562ebd42bcf13b0eac5341d3d887f37661cf965744fe2135fee3bb",
-                "sha256:ab60ed0f00eb465b32e527df2159d4f32cf06f2239b511a45f5e80184ceb9d6f"
+                "sha256:383973b63ad7ed5e3c0311f8b179c52981f9e7b3eaea0e9a830d13ec34dde65f",
+                "sha256:92dacc5bd2bdb8f95aa8dd2585d47ca1c4840e2adb95ccf90034d64f725bfd31"
             ],
-            "version": "==9.0.3"
+            "version": "==8.1.0"
         },
         "soupsieve": {
             "hashes": [
@@ -684,6 +681,14 @@
             ],
             "index": "pypi",
             "version": "==21.5.0"
+        },
+        "toolz": {
+            "hashes": [
+                "sha256:6b312d5e15138552f1bda8a4e66c30e236c831b612b2bf0005f8a1df10a4bc33",
+                "sha256:a5700ce83414c64514d82d60bcda8aabfde092d1c1a8663f9200c07fdcc6da8f"
+            ],
+            "index": "pypi",
+            "version": "==0.11.2"
         },
         "tqdm": {
             "hashes": [

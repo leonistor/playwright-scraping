@@ -9,7 +9,6 @@ missing pdfs.
 import asyncio
 import aiohttp
 import aiofiles
-import os
 
 from random import randint
 from structlog import get_logger

@@ -15,6 +15,7 @@ jsonlines = "*"
 tqdm = "*"
 structlog = "*"
 typed-argument-parser = "*"
+toolz = "*"
 
 [dev-packages]
 pxpx = "*"
