@@ -37,3 +37,8 @@ my playground: https://replit.com/@leonistor/SplendidNauticalGame#main.py
 
 -  https://gist.github.com/madjar/9312452?permalink_comment_id=3494305#gistcomment-3494305
 - https://github.com/leimao/Ramachandran/blob/v0.0.2/ramachandran/download.py#L104
+
+## tqdm progress bar with ProcessPool
+
+- https://nedbatchelder.com/blog/202008/do_a_pile_of_work_better.html
+- https://gist.github.com/alexeygrigorev/79c97c1e9dd854562df9bbeea76fc5de

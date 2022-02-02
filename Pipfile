@@ -16,6 +16,7 @@ tqdm = "*"
 structlog = "*"
 typed-argument-parser = "*"
 toolz = "*"
+aiopath = "*"
 
 [dev-packages]
 pxpx = "*"
