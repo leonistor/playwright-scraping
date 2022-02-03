@@ -1,7 +1,6 @@
 """
 Downloads contemporanul.ro articles with urls from input/articles-contemporanul.txt
 
-
 """
 import asyncio
 import concurrent.futures
@@ -43,7 +42,28 @@ async def scrape_article(
     """Scrape one article from url"""
     log.debug(f"scraping url: {url}")
     await delay()
-    writer.write({"url_scraped": url})
+    async with session.get(url, headers=UA_HEADERS) as resp:
+        status = resp.status
+        article = {
+            "url": url,
+            "status": status,
+        }
+        if status == 200:
+            soup = BeautifulSoup(await resp.text(), "lxml")
+            title_tag = soup.select_one("h1")
+            title = (
+                title_tag.getText() if title_tag is not None else "[scrape] No title"
+            )
+            description_tag = soup.select_one("div#product_description + p")
+            description = (
+                description_tag.getText()
+                if description_tag is not None
+                else "[scrape] No description"
+            )
+            article.update({"title": title, "description": description})
+
+        writer.write(article)
+    # -
 
 
 async def scrape_urls(urls: List[str], writer: jsonlines.Writer):
@@ -69,8 +89,8 @@ def start_scraping(urls: List[str], process_no: int):
 
 
 def main():
-    # wipe outfile
     # TODO: implement cache to resume downloads
+    # wipe outfile
     with open(OUTFILE, "w") as f:
         f.truncate()
 
