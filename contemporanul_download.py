@@ -10,6 +10,7 @@ import aiohttp
 from multiprocessing import cpu_count
 
 from typing import List
+import toolz
 from bs4 import BeautifulSoup
 from random import randint
 
@@ -18,7 +19,7 @@ from structlog import get_logger
 
 
 """ const """
-INPUT_URLS = "input/books-urls.txt"
+INPUT_URLS = "input/articles-contemporanul.txt"
 OUTFILE = "output/contemporanul/contemporanul-articles.jsonl"
 MAX_NUM_CONNECTIONS = 5
 UA_HEADERS = {
@@ -37,15 +38,16 @@ async def delay(lo=100, delta=900):
 def parse_article(soup: BeautifulSoup):
     """Parse HTML of a single article into a dict."""
     article = {}
-    title_tag = soup.select_one("h1")
-    title = title_tag.getText() if title_tag is not None else "[scrape] No title"
-    description_tag = soup.select_one("div#product_description + p")
-    description = (
-        description_tag.getText()
-        if description_tag is not None
-        else "[scrape] No description"
-    )
-    article.update({"title": title, "description": description})
+    title_tag = soup.select_one("h1.post-title")
+    title = title_tag.get_text() if title_tag is not None else "[scrape] No title"
+    # article text: paragraphs from div.entry
+    content_tag = soup.select("div.entry > p")
+    if content_tag is not None:
+        content = [p.get_text() for p in content_tag]
+    else:
+        content = "[scrape] No content"
+    article.update({"title": title, "content": content})
+    # article.update({"title": title, "content": str(content)})
     return article
 
 
@@ -102,9 +104,13 @@ def main():
 
     # read urls from input file
     with open(INPUT_URLS, "r") as f:
-        urls = f.read().splitlines()
+        # urls = f.read().splitlines()
         # DEBUG
-        # urls = f.read().splitlines()[:10]
+        urls = f.read().splitlines()[:50]
+    # fix duplicate urls
+    urls = list(toolz.unique(urls))
+
+    # split urls into num_cores chunks
     num_cores = cpu_count() - 1
     chunk_size = int(len(urls) / num_cores) or 1
 
