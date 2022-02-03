@@ -1,6 +1,8 @@
 # playwright python learning
 
-## resources:
+## tips:
+
+fish shell "watch": `while true; cat output/contemporanul/contemporanul-articles.jsonl | wc -l; sleep 3; end`
 
 
 ### playwright
