@@ -34,6 +34,21 @@ async def delay(lo=100, delta=900):
     await asyncio.sleep(randint(lo, lo + delta) / 1000)
 
 
+def parse_article(soup: BeautifulSoup):
+    """Parse HTML of a single article into a dict."""
+    article = {}
+    title_tag = soup.select_one("h1")
+    title = title_tag.getText() if title_tag is not None else "[scrape] No title"
+    description_tag = soup.select_one("div#product_description + p")
+    description = (
+        description_tag.getText()
+        if description_tag is not None
+        else "[scrape] No description"
+    )
+    article.update({"title": title, "description": description})
+    return article
+
+
 async def scrape_article(
     session: aiohttp.ClientSession,
     url: str,
@@ -50,17 +65,8 @@ async def scrape_article(
         }
         if status == 200:
             soup = BeautifulSoup(await resp.text(), "lxml")
-            title_tag = soup.select_one("h1")
-            title = (
-                title_tag.getText() if title_tag is not None else "[scrape] No title"
-            )
-            description_tag = soup.select_one("div#product_description + p")
-            description = (
-                description_tag.getText()
-                if description_tag is not None
-                else "[scrape] No description"
-            )
-            article.update({"title": title, "description": description})
+            article_data = parse_article(soup)
+            article.update(**article_data)
 
         writer.write(article)
     # -
@@ -96,9 +102,9 @@ def main():
 
     # read urls from input file
     with open(INPUT_URLS, "r") as f:
+        urls = f.read().splitlines()
         # DEBUG
-        # urls = f.read().splitlines()
-        urls = f.read().splitlines()[:10]
+        # urls = f.read().splitlines()[:10]
     num_cores = cpu_count() - 1
     chunk_size = int(len(urls) / num_cores) or 1
 
