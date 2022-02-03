@@ -22,6 +22,7 @@ from structlog import get_logger
 INPUT_URLS = "input/articles-contemporanul.txt"
 OUTFILE = "output/contemporanul/contemporanul-articles.jsonl"
 MAX_NUM_CONNECTIONS = 5
+MAX_TIMEOUT = 900
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
@@ -57,8 +58,9 @@ async def scrape_article(
     writer: jsonlines.Writer,
 ):
     """Scrape one article from url"""
-    log.debug(f"scraping url: {url}")
+    # log.debug(f"scraping url: {url}")
     await delay()
+
     async with session.get(url, headers=UA_HEADERS) as resp:
         status = resp.status
         article = {
@@ -69,6 +71,8 @@ async def scrape_article(
             soup = BeautifulSoup(await resp.text(), "lxml")
             article_data = parse_article(soup)
             article.update(**article_data)
+        else:
+            log.error("article", status=status, url=url)
 
         writer.write(article)
     # -
@@ -78,11 +82,19 @@ async def scrape_urls(urls: List[str], writer: jsonlines.Writer):
     """Scrape a list of urls"""
     tasks = []
     connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
-    async with aiohttp.ClientSession(connector=connector) as session:
+    # seconds?
+    timeout = aiohttp.ClientTimeout(total=MAX_TIMEOUT)
+    async with aiohttp.ClientSession(
+        connector=connector,
+        timeout=timeout,
+    ) as session:
         for url in urls:
             task = asyncio.create_task(scrape_article(session, url, writer))
             tasks.append(task)
-        await asyncio.gather(*tasks)
+        try:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        except Exception as e:
+            print(repr(e))
     # -
 
 
@@ -104,15 +116,17 @@ def main():
 
     # read urls from input file
     with open(INPUT_URLS, "r") as f:
-        # urls = f.read().splitlines()
+        all_urls = f.read().splitlines()
         # DEBUG
-        urls = f.read().splitlines()[:50]
+        # urls = f.read().splitlines()[:50]
     # fix duplicate urls
-    urls = list(toolz.unique(urls))
+    urls = list(toolz.unique(all_urls))
 
     # split urls into num_cores chunks
     num_cores = cpu_count() - 1
     chunk_size = int(len(urls) / num_cores) or 1
+
+    log.info("urls", urls=len(urls))
 
     futures = []
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
