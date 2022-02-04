@@ -17,6 +17,7 @@ structlog = "*"
 typed-argument-parser = "*"
 toolz = "*"
 aiopath = "*"
+aiohttp-client-cache = "*"
 
 [dev-packages]
 pxpx = "*"
