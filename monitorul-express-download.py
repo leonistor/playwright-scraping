@@ -4,7 +4,9 @@ Downloads monitorul-express.ro articles with urls from input file.
 import asyncio
 import concurrent.futures
 import jsonlines
+
 import aiohttp
+import aiohttp_client_cache.session
 
 from multiprocessing import cpu_count
 
@@ -21,7 +23,7 @@ from structlog import get_logger
 INPUT_URLS = "input/articles-monitorul-express.txt"
 OUTFILE = "output/monitorul-express/articles-monitorul-express.jsonl"
 MAX_NUM_CONNECTIONS = 5
-MAX_TIMEOUT = 900
+MAX_TIMEOUT = 2000
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
@@ -81,7 +83,7 @@ async def scrape_urls(urls: List[str], writer: jsonlines.Writer):
     tasks = []
     connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
     timeout = aiohttp.ClientTimeout(total=MAX_TIMEOUT)
-    async with aiohttp.ClientSession(
+    async with aiohttp_client_cache.session.CachedSession(
         connector=connector,
         timeout=timeout,
     ) as session:
