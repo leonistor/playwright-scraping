@@ -26,3 +26,7 @@ arhiva: https://bzb.ro/arhiva/2020#archive
 doar din 2014
 
 arhiva: https://www.contemporanul.ro/arhiva
+
+## mytex
+
+navigation sucks. must use playwright

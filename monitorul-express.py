@@ -4,9 +4,7 @@ to be scraped later.
 """
 
 import asyncio
-from posixpath import split
 import aiohttp
-import aiofiles
 
 from bs4 import BeautifulSoup, Tag
 
