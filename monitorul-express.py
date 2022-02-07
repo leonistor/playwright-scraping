@@ -4,6 +4,7 @@ to be scraped later.
 """
 
 import asyncio
+from posixpath import split
 import aiohttp
 import aiofiles
 
@@ -41,15 +42,14 @@ async def main():
     # read categories start pages from file:
     with open(CATEGORIES_FILES, "r") as f:
         categories = f.read().splitlines()
+    debug(categories)
 
     articles = set()
 
-    # DEBUG
-    page_url = "https://www.monitorulexpres.ro/category/ultima-ora/"
-
-    next_page = True
+    # process category start for above articles and num_pages
+    category_url = "https://www.monitorulexpres.ro/category/ultima-ora/"
     await delay()
-    async with session.get(page_url, headers=UA_HEADERS) as resp:
+    async with session.get(category_url, headers=UA_HEADERS) as resp:
         page = BeautifulSoup(await resp.text(), "lxml")
 
         above_articles_tags = page.select(".td-category-pos-above a.td-image-wrap")
@@ -58,12 +58,13 @@ async def main():
         page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
         articles.update([article.get("href") for article in page_articles])
 
-        next_page = page.select_one('a[aria-label="next-page"]')
-        next_page_url = next_page.get("href") if isinstance(next_page, Tag) else None
+        num_pages_tag = page.select_one("span.pages")
+        num_pages_text = num_pages_tag.text if isinstance(num_pages_tag, Tag) else None
+        num_pages_str = num_pages_text.split(" ")[-1] if num_pages_text else "0"
+        num_pages = int(num_pages_str)
 
-    # debug(len(articles))
-    # debug(next_page)
-    # debug(next_page_url)
+    debug(len(articles))
+    debug(num_pages)
     # with open(OUTFILE, "w") as f:
     #     f.truncate()
     await session.close()
