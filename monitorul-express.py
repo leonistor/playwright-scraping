@@ -42,8 +42,11 @@ async def main():
     # read categories start pages from file:
     with open(CATEGORIES_FILES, "r") as f:
         categories = f.read().splitlines()
-    articles = set()
+    # reset output file
     fout = open(OUTFILE, "w")
+    fout.truncate()
+    # output set
+    articles = set()
 
     for category_url in categories:
         category_name = category_url.split("/")[4]
@@ -74,11 +77,12 @@ async def main():
                 page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
                 articles.update([article.get("href") for article in page_articles])
             log.debug(f"{category_name}: {num_page}/{num_pages}")
-        fout.write("\n".join(articles))
     # - end for categories
 
     await session.close()
+    fout.write("\n".join(articles))
     fout.close()
+    log.debug(f"done! wrote {len(articles)} articles to {OUTFILE}")
     # -
 
 
