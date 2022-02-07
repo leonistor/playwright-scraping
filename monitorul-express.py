@@ -42,7 +42,7 @@ async def main():
     # read categories start pages from file:
     with open(CATEGORIES_FILES, "r") as f:
         categories = f.read().splitlines()
-    debug(categories)
+    # debug(categories)
 
     articles = set()
 
@@ -63,10 +63,19 @@ async def main():
         num_pages_str = num_pages_text.split(" ")[-1] if num_pages_text else "0"
         num_pages = int(num_pages_str)
 
-    debug(len(articles))
+    # process pages
     debug(num_pages)
-    # with open(OUTFILE, "w") as f:
-    #     f.truncate()
+    # for num_page in range(2, num_pages):
+    for num_page in range(2, 10):
+        category_page_url = f"{category_url}page/{num_page}/"
+        async with session.get(category_page_url, headers=UA_HEADERS) as resp:
+            page = BeautifulSoup(await resp.text(), "lxml")
+            page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
+            articles.update([article.get("href") for article in page_articles])
+
+    debug(len(articles))
+    with open(OUTFILE, "w") as f:
+        f.write("\n".join(articles))
     await session.close()
     # -
 
