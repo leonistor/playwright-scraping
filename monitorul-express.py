@@ -42,41 +42,43 @@ async def main():
     # read categories start pages from file:
     with open(CATEGORIES_FILES, "r") as f:
         categories = f.read().splitlines()
-    # debug(categories)
-
     articles = set()
+    fout = open(OUTFILE, "w")
 
-    # process category start for above articles and num_pages
-    category_url = "https://www.monitorulexpres.ro/category/ultima-ora/"
-    await delay()
-    async with session.get(category_url, headers=UA_HEADERS) as resp:
-        page = BeautifulSoup(await resp.text(), "lxml")
-
-        above_articles_tags = page.select(".td-category-pos-above a.td-image-wrap")
-        articles.update([article.get("href") for article in above_articles_tags])
-
-        page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
-        articles.update([article.get("href") for article in page_articles])
-
-        num_pages_tag = page.select_one("span.pages")
-        num_pages_text = num_pages_tag.text if isinstance(num_pages_tag, Tag) else None
-        num_pages_str = num_pages_text.split(" ")[-1] if num_pages_text else "0"
-        num_pages = int(num_pages_str)
-
-    # process pages
-    debug(num_pages)
-    # for num_page in range(2, num_pages):
-    for num_page in range(2, 10):
-        category_page_url = f"{category_url}page/{num_page}/"
-        async with session.get(category_page_url, headers=UA_HEADERS) as resp:
+    for category_url in categories:
+        category_name = category_url.split("/")[4]
+        # process category start for above articles and num_pages
+        await delay()
+        async with session.get(category_url, headers=UA_HEADERS) as resp:
             page = BeautifulSoup(await resp.text(), "lxml")
+
+            above_articles_tags = page.select(".td-category-pos-above a.td-image-wrap")
+            articles.update([article.get("href") for article in above_articles_tags])
+
             page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
             articles.update([article.get("href") for article in page_articles])
 
-    debug(len(articles))
-    with open(OUTFILE, "w") as f:
-        f.write("\n".join(articles))
+            num_pages_tag = page.select_one("span.pages")
+            num_pages_text = (
+                num_pages_tag.text if isinstance(num_pages_tag, Tag) else None
+            )
+            num_pages_str = num_pages_text.split(" ")[-1] if num_pages_text else "0"
+            num_pages = int(num_pages_str)
+
+        # process pages
+        for num_page in range(2, num_pages):
+            category_page_url = f"{category_url}page/{num_page}/"
+            await delay()
+            async with session.get(category_page_url, headers=UA_HEADERS) as resp:
+                page = BeautifulSoup(await resp.text(), "lxml")
+                page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
+                articles.update([article.get("href") for article in page_articles])
+            log.debug(f"{category_name}: {num_page}/{num_pages}")
+        fout.write("\n".join(articles))
+    # - end for categories
+
     await session.close()
+    fout.close()
     # -
 
 
