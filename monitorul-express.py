@@ -58,12 +58,12 @@ async def main():
         page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
         articles.update([article.get("href") for article in page_articles])
 
-        next_page = page.select('a[aria-label="next-page"]')
-        if isinstance(next_page, Tag):
-            next_page_url = next_page.get("href")
+        next_page = page.select_one('a[aria-label="next-page"]')
+        next_page_url = next_page.get("href") if isinstance(next_page, Tag) else None
 
-    debug(articles)
-    debug(next_page)
+    # debug(len(articles))
+    # debug(next_page)
+    # debug(next_page_url)
     # with open(OUTFILE, "w") as f:
     #     f.truncate()
     await session.close()
