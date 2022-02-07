@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 import aiofiles
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from random import randint
 from structlog import get_logger
@@ -43,22 +43,27 @@ async def main():
         categories = f.read().splitlines()
 
     articles = set()
-    all_articles = []
 
     # DEBUG
-    category = "https://www.monitorulexpres.ro/category/ultima-ora/"
+    page_url = "https://www.monitorulexpres.ro/category/ultima-ora/"
 
-    has_next_page = True
-    async with session.get(category, headers=UA_HEADERS) as resp:
+    next_page = True
+    await delay()
+    async with session.get(page_url, headers=UA_HEADERS) as resp:
         page = BeautifulSoup(await resp.text(), "lxml")
-        page_articles = page.select(".item .item-title a")
-        for article in page_articles:
-            article_url = article.get("href")
-            all_articles.append(article_url)
-            articles.add(article_url)
 
-    debug(all_articles)
+        above_articles_tags = page.select(".td-category-pos-above a.td-image-wrap")
+        articles.update([article.get("href") for article in above_articles_tags])
+
+        page_articles = page.select(".tdb-numbered-pagination h3.entry-title a")
+        articles.update([article.get("href") for article in page_articles])
+
+        next_page = page.select('a[aria-label="next-page"]')
+        if isinstance(next_page, Tag):
+            next_page_url = next_page.get("href")
+
     debug(articles)
+    debug(next_page)
     # with open(OUTFILE, "w") as f:
     #     f.truncate()
     await session.close()
