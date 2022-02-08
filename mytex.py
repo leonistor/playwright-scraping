@@ -11,6 +11,8 @@ from devtools import debug
 """ const """
 OUTFILE = "input/articles-mytex.txt"
 CATEGORIES_FILES = "input/categories-mytex.txt"
+CURRENT_CATEGORY = 18
+CONTEXT_TIMEOUT = 1000 * 90
 """ globals """
 log = get_logger()
 
@@ -23,7 +25,7 @@ def save_articles_urls(page: Page, f: TextIOWrapper):
     # get articles urls
     articles = page.locator("li.liAiMyTexSearchItem a.a_aiMyTexSearchItemTitle")
     articles_urls = articles.evaluate_all("list => list.map(e => e.href)")
-    f.write("\n".join(articles_urls))
+    f.write("\n".join(articles_urls) + "\n")
     log.info(f"saved {len(articles_urls)} urls from {page.url}")
 
 
@@ -35,11 +37,12 @@ def main():
     fout = open(OUTFILE, "w")
     fout.truncate()
 
-    url = "https://www.mytex.ro/politic.html#p3"
+    url = f"{categories[CURRENT_CATEGORY]}#p3"
     with sync_playwright() as pw:
         # prepare playwright
         browser = pw.firefox.launch(
-            headless=True,
+            headless=False,
+            slow_mo=3,
             proxy={
                 "server": "http://intelnuc:3129",
             },
@@ -48,42 +51,51 @@ def main():
             no_viewport=True,
             accept_downloads=True,
         )
-        ctx.set_default_timeout(60 * 1000)
+        ctx.set_default_timeout(CONTEXT_TIMEOUT)
         page = ctx.new_page()
 
         # category start page
         page.goto(url)
-        page.wait_for_load_state()
+        page.wait_for_load_state(state="domcontentloaded")
 
         # scroll to bottom
         delay(page)
         footer = page.locator(".customfooter")
         footer.scroll_into_view_if_needed(timeout=0)
-        delay(page)
+        more_btn = page.locator("input#btnAiMyTexSearchLoadMore")
+        more_btn.wait_for(state="attached")
         save_articles_urls(page, fout)
 
         # category second page: from 'Mai multe...' button
         try:
-            more_btn = page.locator("input#btnAiMyTexSearchLoadMore")
             more_btn.scroll_into_view_if_needed()
+            delay(page)
             page.click("input#btnAiMyTexSearchLoadMore")
-            page.wait_for_load_state()
+            page.wait_for_load_state(state="domcontentloaded")
             save_articles_urls(page, fout)
-        except TimeoutError as e:
+        except Exception as e:
             log.error(f"url: {page.url}, error: {e}")
             raise e
 
         # rest of page: click on bottom pagination '>'
-        for _ in range(10):
+        has_next_page = True
+        page_count = 3
+        # for _ in range(10):
+        while has_next_page:
             try:
+                delay(page)
                 next_page_arrow = page.locator("li.pagination-next a.pagenav")
                 next_page_arrow.scroll_into_view_if_needed()
                 page.click("li.pagination-next a.pagenav")
-                page.wait_for_load_state()
+                page.wait_for_load_state(state="domcontentloaded")
                 save_articles_urls(page, fout)
-            except TimeoutError as e:
+                page_count += 1
+            except Exception as e:
+                has_next_page = False
                 log.error(f"url: {page.url}, error: {e}")
-                raise e
+                log.info(f"done at page {page_count}")
+                # raise e
+                pass
 
         browser.close()
 
