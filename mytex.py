@@ -19,7 +19,12 @@ def delay(page: Page):
 def main():
     url = "https://www.mytex.ro/economic.html#p3"
     with sync_playwright() as pw:
-        browser = pw.firefox.launch(headless=False)
+        browser = pw.firefox.launch(
+            headless=False,
+            proxy={
+                "server": "http://intelnuc:3129",
+            },
+        )
         ctx = browser.new_context(
             no_viewport=True,
             accept_downloads=True,
@@ -42,6 +47,13 @@ def main():
         footer.scroll_into_view_if_needed(timeout=0)
         log.info("footer scrolled")
         delay(page)
+
+        # get articles urls
+        articles = page.locator("li.liAiMyTexSearchItem a.a_aiMyTexSearchItemTitle")
+        articles_urls = articles.evaluate_all("list => list.map(e => e.href)")
+        log.info(f"getting articles!")
+        debug(articles_urls)
+        page.wait_for_timeout(3000)
 
         try:
             more_btn = page.locator("input#btnAiMyTexSearchLoadMore")
