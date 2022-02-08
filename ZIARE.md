@@ -30,3 +30,9 @@ arhiva: https://www.contemporanul.ro/arhiva
 ## mytex
 
 navigation sucks. must use playwright
+
+unique urls:
+
+```bash
+cat input/articles-mytex.txt | sort | uniq -u | wc -l
+```
