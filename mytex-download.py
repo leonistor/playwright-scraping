@@ -3,7 +3,6 @@ Downloads mytex.ro articles with urls from input file.
 """
 import asyncio
 import concurrent.futures
-from weakref import proxy
 import jsonlines
 
 import aiohttp
@@ -24,7 +23,7 @@ import logging
 INPUT_URLS = "input/articles-mytex-small.txt"
 OUTFILE = "output/mytex/articles-mytex.jsonl"
 MAX_NUM_CONNECTIONS = 5
-MAX_TIMEOUT = 2000
+MAX_TIMEOUT = 9000
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
@@ -61,17 +60,19 @@ def parse_article(soup: BeautifulSoup):
     author = author_tag.get_text() if author_tag is not None else "[scrape] no author"
     published_tag = soup.select_one("dl.article-info dd.published")
     published = (
-        published_tag.get_text() if published_tag is not None else "[scrape] no author"
+        published_tag.get_text()
+        if published_tag is not None
+        else "[scrape] no published date"
     )
     # image?
 
     article.update(
         {
-            "title": title,
+            "title": title.strip(),
             "content": content,
-            "category": category,
+            "category": category.strip(),
             "author": author,
-            "published": published,
+            "published": published.strip(),
         }
     )
     return article
