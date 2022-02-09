@@ -45,15 +45,35 @@ async def delay(lo=100, delta=900):
 def parse_article(soup: BeautifulSoup):
     """Parse HTML of a single article into a dict."""
     article = {}
-    title_tag = soup.select_one("h1.tdb-title-text")
-    title = title_tag.get_text() if title_tag is not None else "[scrape] No title"
+    category_tag = soup.select_one("#mytex_middle_content_component_div1 h3")
+    category = (
+        category_tag.get_text() if category_tag is not None else "[scrape] no category"
+    )
+    title_tag = soup.select_one("h2.contentheading")
+    title = title_tag.get_text() if title_tag is not None else "[scrape] no title"
     # article text
-    content_tag = soup.select_one("div.td-post-content")
+    content_tag = soup.select(".item-page p:not([class])")
     if content_tag is not None:
-        content = content_tag.get_text()
+        content = [p.get_text() for p in content_tag]
     else:
         content = "[scrape] No content"
-    article.update({"title": title, "content": content})
+    author_tag = soup.select_one("dl.article-info dd.createdby")
+    author = author_tag.get_text() if author_tag is not None else "[scrape] no author"
+    published_tag = soup.select_one("dl.article-info dd.published")
+    published = (
+        published_tag.get_text() if published_tag is not None else "[scrape] no author"
+    )
+    # image?
+
+    article.update(
+        {
+            "title": title,
+            "content": content,
+            "category": category,
+            "author": author,
+            "published": published,
+        }
+    )
     return article
 
 
@@ -65,7 +85,11 @@ async def scrape_article(
     """Scrape one article from url"""
     await delay()
 
-    async with session.get(url, headers=UA_HEADERS, proxy="") as resp:
+    async with session.get(
+        url,
+        headers=UA_HEADERS,
+        proxy="http://intelnuc:3129",
+    ) as resp:
         status = resp.status
         article = {
             "url": url,
@@ -80,7 +104,7 @@ async def scrape_article(
 
         writer.write(article)
 
-    return {"status": status}
+    return {"status": status, "url": url}
     # -
 
 
