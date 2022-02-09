@@ -5,6 +5,8 @@
 fish shell "watch": `while true; cat output/contemporanul/contemporanul-articles.jsonl | wc -l; sleep 3; end`
 
 
+cat without word wrap: `cat output/mytex/articles-mytex.jsonl | cut -c1-180 | less`
+
 ### playwright
 
 - block resources https://www.zenrows.com/blog/blocking-resources-in-playwright
@@ -51,3 +53,7 @@ my playground: https://replit.com/@leonistor/SplendidNauticalGame#main.py
 - https://stackoverflow.com/a/60336607/9727366
 - https://github.com/scrapy-plugins/scrapy-playwright#examples
 - https://stackoverflow.com/a/69193325/9727366
+
+## http ad blocking proxy
+
+docker run -p 8080:8080 -p 3129:3129 pgnunes/sabproxy

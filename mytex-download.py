@@ -19,8 +19,8 @@ import logging
 
 
 """ const """
-# INPUT_URLS = "input/articles-mytex.txt"
-INPUT_URLS = "input/articles-mytex-small.txt"
+INPUT_URLS = "input/articles-mytex.txt"
+# INPUT_URLS = "input/articles-mytex-small.txt"
 OUTFILE = "output/mytex/articles-mytex.jsonl"
 MAX_NUM_CONNECTIONS = 5
 MAX_TIMEOUT = 9000
