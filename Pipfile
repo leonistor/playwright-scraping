@@ -21,6 +21,7 @@ aiohttp-client-cache = "*"
 aiosqlite = "*"
 aiosql = "*"
 faker = "*"
+tortoise-orm = {extras = ["aiosqlite"], version = "*"}
 
 [dev-packages]
 pxpx = "*"
