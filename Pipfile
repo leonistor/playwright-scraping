@@ -18,6 +18,8 @@ typed-argument-parser = "*"
 toolz = "*"
 aiopath = "*"
 aiohttp-client-cache = "*"
+aiosqlite = "*"
+aiosql = "*"
 
 [dev-packages]
 pxpx = "*"
