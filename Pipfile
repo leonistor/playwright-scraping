@@ -20,6 +20,7 @@ aiopath = "*"
 aiohttp-client-cache = "*"
 aiosqlite = "*"
 aiosql = "*"
+faker = "*"
 
 [dev-packages]
 pxpx = "*"

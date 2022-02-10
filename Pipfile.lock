@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "39e2ab06d7f769adad465625a3da27f84b0f2708799e04cb26a6da374308e4ab"
+            "sha256": "3c933462bbf26d18ed4e29639b16c2bb1ba32dc0bf3873a4bcfab4c759a1b8a4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -28,7 +28,7 @@
                 "sha256:0aefa1d91d000d3a20a515d153db2ebf713076c7c94edf2fca85d3d83316abc5",
                 "sha256:0e2a524e4714efda47ce8964b13d4da94cf553411f9f6da813df615a4cd73d95"
             ],
-            "markers": "python_version >= '3.5' and python_version < '4'",
+            "markers": "python_version >= '3.5' and python_version < '4.0'",
             "version": "==3.7.4"
         },
         "aiofiles": {
@@ -284,7 +284,7 @@
                 "sha256:cd1c20aab04c18f0534b3f0b59103a94dede3c7d7b43c9cc525df3980b4c7c54",
                 "sha256:d767faf537a9ea774e8408ba15a0f1dc734f06857c2d28bdf4258a63b5885f42"
             ],
-            "markers": "python_version >= '3.5' and python_version < '4'",
+            "markers": "python_version >= '3.5' and python_version < '4.0'",
             "version": "==0.9.5"
         },
         "cchardet": {
@@ -391,6 +391,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==21.6.0"
+        },
+        "faker": {
+            "hashes": [
+                "sha256:2b6e3b10bbea344d2e29c902a9783e155e750ab69a83a220b3a04abb038392bf",
+                "sha256:9d51eed0a0d93ca768101344237406ad63e6d86a3ba3ea44fd824629ef634fc5"
+            ],
+            "index": "pypi",
+            "version": "==12.2.0"
         },
         "frozenlist": {
             "hashes": [
@@ -751,6 +759,14 @@
             ],
             "version": "==8.1.0"
         },
+        "python-dateutil": {
+            "hashes": [
+                "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
+                "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"
+            ],
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==2.8.2"
+        },
         "python-forge": {
             "hashes": [
                 "sha256:bf91f9a42150d569c2e9a0d90ab60a8cbed378bdf185e5120532a3481067395c"
@@ -1087,6 +1103,7 @@
                 "sha256:59b895e326f0fb0d733fd28c6839bd18ad0687ba20efc26d4277fd1d30b971f4",
                 "sha256:9135c1af61eec0f650cd1ea1ed8ce298e54d56bcd8cc2ef46edd7702c171337c"
             ],
+            "markers": "python_version >= '3.5'",
             "version": "==2.11.1"
         },
         "pyparsing": {

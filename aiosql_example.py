@@ -6,6 +6,8 @@ import asyncio
 import aiosqlite
 import aiosql
 
+from faker import Faker
+
 from devtools import debug
 
 
@@ -20,6 +22,11 @@ CREATE TABLE IF NOT EXISTS urls (
 -- name: insert_url!
 -- Insert an url without returning any result (!)
 INSERT INTO urls(url, status) VALUES(:url, :status);
+
+-- name: bulk_insert_urls*!
+-- Bulk insert (*!) a list of urls
+INSERT INTO urls(url, status)
+VALUES(:url, :status);
 
 -- name: get_urls
 SELECT url, status FROM urls;
@@ -36,17 +43,27 @@ async def create_tables(conn: aiosqlite.Connection):
 
 
 async def create_dummy_urls(conn: aiosqlite.Connection):
-    await query.insert_url(conn, url="https://anaaremere.com", status="done")
+    fkr = Faker()
+    statuses = ["new", "error", "done"]
+    urls = [
+        {
+            "url": fkr.unique.url(),
+            "status": fkr.random_elements(elements=statuses)[0],
+        }
+        for _ in range(100)
+    ]
+    await query.bulk_insert_urls(conn, urls)
 
 
 async def show_urls(conn: aiosqlite.Connection):
     urls = await query.get_urls(conn)
-    debug(urls)
+    debug(urls[:3])
 
 
 async def main():
     async with aiosqlite.connect(DB) as conn:
         await create_dummy_urls(conn)
+        await conn.commit()
         await show_urls(conn)
 
 
