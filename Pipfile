@@ -26,6 +26,7 @@ pxpx = "*"
 devtools = {extras = ["pygments"], version = "*"}
 pytest = "*"
 pytest-asyncio = "*"
+litecli = "*"
 
 [requires]
 python_version = "3.10"
