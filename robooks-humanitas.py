@@ -50,6 +50,9 @@ async def main():
         datefmt="%H:%M:%S",
     )
     logging.debug("started")
+
+    book_urls = []
+
     connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
     timeout = aiohttp.ClientTimeout(total=MAX_TIMEOUT)
     async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
@@ -61,8 +64,16 @@ async def main():
             book_tags = page.select(".book_box .book-description a")
             for book in book_tags:
                 book_url = book.get("href")
-                logging.debug(f"{BASE_URL}{book_url}")
+                book_urls.append(book_url)
+                # logging.debug(f"{BASE_URL}{book_url}")
+        logging.info(f"collected {len(book_urls)} book urls")
+
+        for url in book_urls:
+            pass
+        # - ClientSession
+
     logging.debug("done")
+    # -
 
 
 if __name__ == "__main__":
