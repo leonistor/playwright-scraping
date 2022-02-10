@@ -23,6 +23,10 @@ CREATE TABLE IF NOT EXISTS urls (
 -- Insert an url without returning any result (!)
 INSERT INTO urls(url, status) VALUES(:url, :status);
 
+-- name: upsert_url!
+-- Insert or replace an url
+INSERT OR REPLACE INTO urls(url, status) VALUES(:url, :status);
+
 -- name: bulk_insert_urls*!
 -- Bulk insert (*!) a list of urls
 INSERT INTO urls(url, status)
@@ -53,17 +57,29 @@ async def create_dummy_urls(conn: aiosqlite.Connection):
         for _ in range(100)
     ]
     await query.bulk_insert_urls(conn, urls)
+    await conn.commit()
 
 
 async def show_urls(conn: aiosqlite.Connection):
     urls = await query.get_urls(conn)
-    debug(urls[:3])
+    debug(urls[:10])
 
 
 async def main():
     async with aiosqlite.connect(DB) as conn:
-        await create_dummy_urls(conn)
-        await conn.commit()
+        # await create_dummy_urls(conn)
+        print("--- before")
+        await show_urls(conn)
+        doned = [
+            "https://www.leon.net/",
+            "https://www.gregory.org/",
+            "http://guerrero.com/",
+            "http://alvarez.com/",
+        ]
+        for url in doned:
+            await query.upsert_url(conn, url=url, status="done")
+            await conn.commit()
+        print("--- after")
         await show_urls(conn)
 
 
