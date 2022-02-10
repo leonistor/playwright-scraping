@@ -34,13 +34,17 @@ async def page_soup(session: aiohttp.ClientSession, url: str) -> BeautifulSoup:
     return soup
 
 
-async def save_pdf(session, outdir: str, image_url: str, image_file: str):
+async def save_pdf(session: aiohttp.ClientSession, url: str):
     await delay()
-    async with session.get(image_url, headers=UA_HEADERS) as resp:
+    async with session.get(url, headers=UA_HEADERS) as resp:
         if resp.status == 200:
-            fimg = await aiofiles.open(f"{outdir}/img/{image_file}", "wb")
-            await fimg.write(await resp.read())
-            await fimg.close()
+            filename = url.split("/")[-1]
+            f = await aiofiles.open(f"{OUTDIR}/{filename}", "wb")
+            await f.write(await resp.read())
+            await f.close()
+            logging.debug(f"wrote {filename}")
+        else:
+            logging.error(f"bad download for {url}")
 
 
 async def main():
@@ -51,11 +55,10 @@ async def main():
     )
     logging.debug("started")
 
-    book_urls = []
-
     connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
     timeout = aiohttp.ClientTimeout(total=MAX_TIMEOUT)
     async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+        book_urls = []
         for url in [
             f"{BASE_URL}/humanitas/colectii/biblioteca-virtuala/{i}"
             for i in range(1, 4 + 1)
@@ -69,7 +72,20 @@ async def main():
         logging.info(f"collected {len(book_urls)} book urls")
 
         for url in book_urls:
-            pass
+            page = await page_soup(session, f"{BASE_URL}{url}")
+            download_tag = page.select_one('.prod_desc_text  a[target="_blank"]')
+            if download_tag:
+                pdf_href = download_tag.get("href")
+                if isinstance(pdf_href, str):
+                    pdf_url = f"{BASE_URL}{pdf_href}"
+                    await save_pdf(session, pdf_url)
+                    # logging.info(f"file: {pdf_url}")
+                else:
+                    logging.error(f"bad download url {download_tag} for {url}")
+                    continue
+            else:
+                logging.error(f"bad download tag {download_tag} for {url}")
+                continue
         # - ClientSession
 
     logging.debug("done")
