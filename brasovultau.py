@@ -8,8 +8,6 @@ from playwright.sync_api import sync_playwright, Page
 
 from random import randint
 
-# DEBUG
-from devtools import debug
 import logging
 
 
@@ -49,11 +47,9 @@ def main():
 
     with sync_playwright() as pw, open(OUTFILE, "w") as fout:
         # prepare playwright
-        # DEBUG
         browser = pw.firefox.launch(
-            headless=False,
-            # DEBUG
-            slow_mo=3,
+            headless=True,
+            # slow_mo=3,
         )
         ctx = browser.new_context(
             no_viewport=True,
@@ -62,8 +58,7 @@ def main():
         ctx.set_default_timeout(CONTEXT_TIMEOUT)
         page = ctx.new_page()
 
-        # DEBUG
-        for url in categories[:3]:
+        for url in categories:
             logging.info(f"PROCESSING CATEG {url}")
             # category start page
             page.goto(url)
@@ -73,14 +68,14 @@ def main():
             # rest of page: click on pagination '>'
             has_next_page = True
             page_count = 1
-            # DEBUG
-            while has_next_page and page_count < 5:
+            while has_next_page:
                 try:
                     delay(page)
                     next_page_arrow = page.locator("a.pageNo.nextPage").first
                     next_page_arrow.click()
                     page.wait_for_load_state(state="domcontentloaded")
                     save_articles_urls(page, fout)
+                    logging.info(f"url: {page.url} page: {page_count}")
                     page_count += 1
                 except Exception as e:
                     has_next_page = False
