@@ -3,79 +3,99 @@ Download list of articles urls from www.brasovultau.ro
 to be scraped later by brasovultau_download.py
 """
 
-import asyncio
-import aiohttp
-import aiofiles
-
-from bs4 import BeautifulSoup
+from io import TextIOWrapper
+from playwright.sync_api import sync_playwright, Page
 
 from random import randint
-from structlog import get_logger
+
+# DEBUG
 from devtools import debug
+import logging
 
 
 """ const """
 OUTFILE = "input/articles-brasovultau.txt"
 CATEGORIES_FILES = "input/categories-brasovultau.txt"
-BASE_URL = "http://www.brasovultau.ro"
-MAX_NUM_CONNECTIONS = 5
-MAX_TIMEOUT = 900
+CONTEXT_TIMEOUT = 1000 * 90
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
 
 """ globals """
-log = get_logger()
+logging.basicConfig(
+    format="▸ :%(lineno)d %(levelname)s %(message)s",
+    level=logging.DEBUG,
+    datefmt="%H:%M:%S",
+)
+logging.debug("started")
 
 
-async def delay(lo=100, delta=900):
-    """Async delay for random miliseconds"""
-    await asyncio.sleep(randint(lo, lo + delta) / 1000)
+def delay(page: Page):
+    page.wait_for_timeout(randint(100, 900))
 
 
-"""
-var request = $.ajax({
-    url: '/bin/paging.php',
-    type: "POST",
-    data: {
-      forPage: forPage,
-      currentPage: currentPage
-    },
-
-"""
+def save_articles_urls(page: Page, f: TextIOWrapper):
+    # get articles urls
+    articles = page.locator(".item .item-title a")
+    articles_urls = articles.evaluate_all("list => list.map(e => e.href)")
+    f.write("\n".join(articles_urls) + "\n")
+    logging.info(f"saved {len(articles_urls)} urls from {page.url}")
 
 
-async def main():
-    connector = aiohttp.TCPConnector(limit_per_host=MAX_NUM_CONNECTIONS)
-    timeout = aiohttp.ClientTimeout(total=MAX_TIMEOUT)
-    session = aiohttp.ClientSession(connector=connector, timeout=timeout)
-
+def main():
     # read categories start pages from file:
     with open(CATEGORIES_FILES, "r") as f:
         categories = f.read().splitlines()
 
-    articles = set()
-    all_articles = []
+    with sync_playwright() as pw, open(OUTFILE, "w") as fout:
+        # prepare playwright
+        # DEBUG
+        browser = pw.firefox.launch(
+            headless=False,
+            # DEBUG
+            slow_mo=3,
+        )
+        ctx = browser.new_context(
+            no_viewport=True,
+            accept_downloads=True,
+        )
+        ctx.set_default_timeout(CONTEXT_TIMEOUT)
+        page = ctx.new_page()
 
-    # DEBUG
-    category = "http://www.brasovultau.ro/categorii/cultura.html"
+        # DEBUG
+        for url in categories[:3]:
+            logging.info(f"PROCESSING CATEG {url}")
+            # category start page
+            page.goto(url)
+            page.wait_for_load_state(state="domcontentloaded")
+            save_articles_urls(page, fout)
 
-    has_next_page = True
-    async with session.get(category, headers=UA_HEADERS) as resp:
-        page = BeautifulSoup(await resp.text(), "lxml")
-        page_articles = page.select(".item .item-title a")
-        for article in page_articles:
-            article_url = article.get("href")
-            all_articles.append(article_url)
-            articles.add(article_url)
-
-    debug(all_articles)
-    debug(articles)
-    # with open(OUTFILE, "w") as f:
-    #     f.truncate()
-    await session.close()
+            # rest of page: click on pagination '>'
+            has_next_page = True
+            page_count = 1
+            # DEBUG
+            while has_next_page and page_count < 5:
+                try:
+                    delay(page)
+                    next_page_arrow = page.locator("a.pageNo.nextPage").first
+                    next_page_arrow.click()
+                    page.wait_for_load_state(state="domcontentloaded")
+                    save_articles_urls(page, fout)
+                    page_count += 1
+                except Exception as e:
+                    has_next_page = False
+                    # logging.error(f"url: {page.url}, error: {e}")
+                    logging.info(f"done at page {page_count}")
+                    # raise e
+                    pass
+                    # raise e
+            # - while has_next_page
+        # - for categories
+        browser.close()
+    # - sync_playwright, fout
+    logging.debug("done")
     # -
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

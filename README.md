@@ -7,6 +7,8 @@ fish shell "watch": `while true; cat output/contemporanul/contemporanul-articles
 
 cat without word wrap: `cat output/mytex/articles-mytex.jsonl | cut -c1-180 | less`
 
+unique urls: `cat input/articles-mytex.txt | sort | uniq | wc -l`
+
 ### playwright
 
 - block resources https://www.zenrows.com/blog/blocking-resources-in-playwright
