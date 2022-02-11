@@ -3,11 +3,12 @@ Try tortoise-orm for the url cache.
 """
 
 import asyncio
-from faker import Faker
 
 from tortoise import Tortoise, fields
 from tortoise.models import Model
 from enum import Enum
+
+from devtools import debug
 
 DB = "sqlite://db/tortoise-urls.sqlite"
 
@@ -19,7 +20,7 @@ class Status(Enum):
 
 
 class Url(Model):
-    url = fields.CharField(pk=True, unique=True, max_length=255 * 4)
+    url = fields.CharField(pk=True, unique=True, max_length=255 * 8)
     status = fields.CharEnumField(
         Status,
         default=Status.NEW,
@@ -39,7 +40,15 @@ async def main():
     )
     await Tortoise.generate_schemas()
 
-    print(await Url.all())
+    urls = [
+        Url(url="url1"),
+        Url(url="url2"),
+        Url(url="url3"),
+    ]
+    await Url.bulk_create(urls)
+
+    zashit = await Url.all().values()
+    debug(zashit)
 
     await Tortoise.close_connections()
 
