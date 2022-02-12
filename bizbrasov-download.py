@@ -23,8 +23,8 @@ import logging
 INPUT_URLS = "input/articles-bizbrasov.txt"
 OUTFILE = "output/bizbrasov/articles-bizbrasov.jsonl"
 OUTDIR = "output/bizbrasov/img/"
-MAX_NUM_CONNECTIONS = 5
-MAX_TIMEOUT = 9000
+MAX_NUM_CONNECTIONS = 4
+MAX_TIMEOUT = 10000
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
@@ -37,7 +37,7 @@ logging.basicConfig(
 )
 
 
-async def delay(lo=100, delta=900):
+async def delay(lo=1000, delta=9000):
     """Async delay for random miliseconds"""
     await asyncio.sleep(randint(lo, lo + delta) / 1000)
 
@@ -84,8 +84,9 @@ def parse_article(soup: BeautifulSoup):
     if image_tag:
         image_url = image_tag.get("src")
         if isinstance(image_url, str):
-            # https://www.bizbrasov.ro/wp-content/uploads/2020/05/comisia-europeana.hmoju2sqv5-2-1024x768.jpg
+            # https://www.bizbrasov.ro/wp-content/uploads/2020/05/comisia-europeana.hmoju2sqv5-2-1024x768.jpg?fit=810%2C456&ssl=1
             image_file = "_".join(image_url.split("/")[5:])
+            image_file = image_file.split("?")[0]
 
     article.update(
         {
@@ -127,7 +128,7 @@ async def scrape_article(
             logging.error(f"article: status: {status}, url:{url}")
 
         writer.write(article)
-        if article["image_url"]:
+        if "image_url" in article and article["image_url"] != "":
             await save_image(
                 session=session,
                 outdir=OUTDIR,
