@@ -21,7 +21,7 @@ UA_HEADERS = {
 
 """ globals """
 logging.basicConfig(
-    format="▸ :%(lineno)d %(levelname)s %(message)s",
+    format="%(levelname)s %(message)s",
     level=logging.DEBUG,
     datefmt="%H:%M:%S",
 )
@@ -37,7 +37,30 @@ def save_articles_urls(page: Page, f: TextIOWrapper):
     articles = page.locator(".item .item-title a")
     articles_urls = articles.evaluate_all("list => list.map(e => e.href)")
     f.write("\n".join(articles_urls) + "\n")
-    logging.info(f"saved {len(articles_urls)} urls from {page.url}")
+    # logging.info(f"saved {len(articles_urls)} urls from {page.url}")
+
+
+def is_last_page(page: Page) -> bool:
+    pagination_tag = page.locator(".paging-toolbar span").first
+    try:
+        # "Afisare stiri de la 811 la 825 din 840"
+        pagination_text = pagination_tag.text_content()
+        if pagination_text:
+            pagination_elements = pagination_text.split(" ")
+            current = int(pagination_elements[6])
+            total = int(pagination_elements[8])
+            # logging.debug(f"current: {current} total: {total}")
+            if current < total:
+                return False
+            else:
+                return True
+        else:
+            logging.error(f"wrong pagination at url {page.url}")
+            return True
+
+    except Exception as e:
+        logging.error(f"pagination error {e} at url {page.url}")
+        return True
 
 
 def main():
@@ -49,7 +72,11 @@ def main():
         # prepare playwright
         browser = pw.firefox.launch(
             headless=True,
-            # slow_mo=3,
+            # headless=False,
+            # slow_mo=80,
+            proxy={
+                "server": "http://intelnuc:3129",
+            },
         )
         ctx = browser.new_context(
             no_viewport=True,
@@ -58,6 +85,8 @@ def main():
         ctx.set_default_timeout(CONTEXT_TIMEOUT)
         page = ctx.new_page()
 
+        # DEBUG
+        # for url in categories[8:10]:
         for url in categories:
             logging.info(f"PROCESSING CATEG {url}")
             # category start page
@@ -67,15 +96,18 @@ def main():
 
             # rest of page: click on pagination '>'
             has_next_page = True
-            page_count = 1
+            page_count = 2
             while has_next_page:
                 try:
                     delay(page)
+                    logging.info(f"url: {page.url} page: {page_count}")
                     next_page_arrow = page.locator("a.pageNo.nextPage").first
+
                     next_page_arrow.click()
                     page.wait_for_load_state(state="domcontentloaded")
                     save_articles_urls(page, fout)
-                    logging.info(f"url: {page.url} page: {page_count}")
+
+                    has_next_page = not is_last_page(page)
                     page_count += 1
                 except Exception as e:
                     has_next_page = False
