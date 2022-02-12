@@ -24,7 +24,7 @@ INPUT_URLS = "input/articles-bizbrasov.txt"
 OUTFILE = "output/bizbrasov/articles-bizbrasov.jsonl"
 OUTDIR = "output/bizbrasov/img/"
 MAX_NUM_CONNECTIONS = 4
-MAX_TIMEOUT = 10000
+MAX_TIMEOUT = 30000
 UA_HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
 }
@@ -37,7 +37,7 @@ logging.basicConfig(
 )
 
 
-async def delay(lo=1000, delta=9000):
+async def delay(lo=5000, delta=15000):
     """Async delay for random miliseconds"""
     await asyncio.sleep(randint(lo, lo + delta) / 1000)
 
@@ -79,14 +79,15 @@ def parse_article(soup: BeautifulSoup):
         if published_tag is not None
         else "[scrape] no published date"
     )
-    image_url, image_file = "", ""
+    image_url, image_file = "none", "none"
     image_tag = soup.select_one("figure.wp-block-image img")
     if image_tag:
         image_url = image_tag.get("src")
         if isinstance(image_url, str):
             # https://www.bizbrasov.ro/wp-content/uploads/2020/05/comisia-europeana.hmoju2sqv5-2-1024x768.jpg?fit=810%2C456&ssl=1
             image_file = "_".join(image_url.split("/")[5:])
-            image_file = image_file.split("?")[0]
+            if "?" in image_file:
+                image_file = image_file.split("?")[0]
 
     article.update(
         {
@@ -128,7 +129,7 @@ async def scrape_article(
             logging.error(f"article: status: {status}, url:{url}")
 
         writer.write(article)
-        if "image_url" in article and article["image_url"] != "":
+        if "image_url" in article and article["image_url"] != "none":
             await save_image(
                 session=session,
                 outdir=OUTDIR,
