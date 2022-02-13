@@ -20,8 +20,8 @@ import logging
 
 
 """ const """
-INPUT_URLS = "input/articles-bizbrasov.txt"
-OUTFILE = "output/bizbrasov/articles-bizbrasov.jsonl"
+INPUT_URLS = "input/retry-bizbrasov.txt"
+OUTFILE = "output/bizbrasov/retry-articles-bizbrasov.jsonl"
 OUTDIR = "output/bizbrasov/img/"
 MAX_NUM_CONNECTIONS = 4
 MAX_TIMEOUT = 30000

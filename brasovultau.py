@@ -12,7 +12,7 @@ import logging
 
 
 """ const """
-OUTFILE = "input/articles-brasovultau.txt"
+OUTFILE = "input/retry-articles-brasovultau.txt"
 CATEGORIES_FILES = "input/categories-brasovultau.txt"
 CONTEXT_TIMEOUT = 1000 * 90
 UA_HEADERS = {
