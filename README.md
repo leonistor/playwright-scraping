@@ -9,6 +9,27 @@ cat without word wrap: `cat output/mytex/articles-mytex.jsonl | cut -c1-180 | le
 
 unique urls: `cat input/articles-mytex.txt | sort | uniq | wc -l`
 
+aria2c download from list.txt urls with 2 threads: `aria2c -ilist.txt -j2`
+
+batch parallel convert pdfs to txt: `fd -e pdf -x mutool convert -o txt/"{.}".txt -F text -O dehyphenate "{}"`
+
+delete empty files: `fd -e txt --size 0b -x rm`
+
+fish shell scripting: https://developerlife.com/2021/01/19/fish-scripting-manual/
+
+## fish script for lang detect
+
+using Apache Tika: https://tika.apache.org/
+
+```fish
+#!/usr/bin/env fish
+for f in (ls -1 txt/*.txt)
+  set flang (java -jar /home/leo/Downloads/tika-app-2.3.0.jar --language $f)
+  echo $flang" = "$f
+end
+```
+
+
 ### playwright
 
 - block resources https://www.zenrows.com/blog/blocking-resources-in-playwright
