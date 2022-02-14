@@ -25,6 +25,7 @@ tortoise-orm = {extras = ["aiosqlite"], version = "*"}
 diskcache = "*"
 aiocache = "*"
 ormar = {extras = ["sqlite"], version = "*"}
+databases = {extras = ["sqlite"], version = "*"}
 
 [dev-packages]
 pxpx = "*"

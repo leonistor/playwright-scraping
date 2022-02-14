@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "93c0e3879c943e19a7cac2f8385bc97eace9e82ae1df57203305f5f9644a2953"
+            "sha256": "df1b0f4a15329cd13a90a6a11c9c203951e2ddf9323569d4a3671ccee8a8e9d8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -401,11 +401,14 @@
             "version": "==21.6.0"
         },
         "databases": {
+            "extras": [
+                "sqlite"
+            ],
             "hashes": [
                 "sha256:04a3294d053bd8d9f4162fc4975ab11a3e9ad01ae37992adce84440725957fec",
                 "sha256:85a6b0dd92e4bc95205c08141baf1e192c8aedb2159ce03bee39bb4117cfed83"
             ],
-            "markers": "python_version >= '3.6'",
+            "index": "pypi",
             "version": "==0.5.4"
         },
         "diskcache": {
