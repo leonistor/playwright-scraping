@@ -1,5 +1,5 @@
 """
-Downloads brasovultau.ro articles with urls from input file.
+Downloads pressone.ro articles with urls from input file.
 """
 import asyncio
 import aiofiles
@@ -13,15 +13,15 @@ from multiprocessing import cpu_count
 
 from typing import List
 from bs4 import BeautifulSoup
-from random import randint
+from random import randint, sample
 
 from devtools import debug
 import logging
 
 
 """ const """
-INPUT_URLS = "input/articles-brasovultau.txt"
-OUTFILE = "output/brasovultau/articles-brasovultau.jsonl"
+INPUT_URLS = "input/articles-pressone.txt"
+OUTFILE = "output/pressone/articles-pressone.jsonl"
 MAX_NUM_CONNECTIONS = 4
 MAX_TIMEOUT = 30000
 UA_HEADERS = {
@@ -44,28 +44,30 @@ async def delay(lo=3000, delta=3000):
 def parse_article(soup: BeautifulSoup):
     """Parse HTML of a single article into a dict."""
     article = {}
-    title_tag = soup.select_one("div.article-title:nth-child(2)")
+    title_tag = soup.select_one("h1")
     title = title_tag.get_text() if title_tag is not None else "[scrape] no title"
     # article text
-    content_tag = soup.select_one(".article-body")
-    content = (
-        content_tag.get_text() if content_tag is not None else "[scrape] no content"
-    )
+    content_tag = soup.select_one(".BodyStyler__GutenbergStyled-sc-ssx5r2-0.epAIFH")
+    content = []
+    if content_tag is not None:
+        for elem in content_tag.children:
+            content.append(elem.get_text())
+
     published_tag = soup.select_one(".info-bar .date")
     published = (
         published_tag.get_text()
         if published_tag is not None
         else "[scrape] no published date"
     )
-    tags_tag = soup.select_one(".article-tags")
-    tags = tags_tag.get_text() if tags_tag is not None else "[scrape] no tags"
+    author_tag = soup.select_one(".article-tags")
+    author = author_tag.get_text() if author_tag is not None else "[scrape] no author"
 
     article.update(
         {
             "title": title.strip(),
             "content": content,
             "published": published.strip(),
-            "tags": tags.strip(),
+            "author": author.strip(),
         }
     )
     return article
@@ -82,7 +84,7 @@ async def scrape_article(
     async with session.get(
         url,
         headers=UA_HEADERS,
-        proxy="http://intelnuc:3129",
+        # proxy="http://intelnuc:3129",
     ) as resp:
         status = resp.status
         article = {
@@ -150,6 +152,9 @@ def main():
     # read urls from input file
     with open(INPUT_URLS, "r") as f:
         urls = f.read().splitlines()
+
+    # DEBUG
+    urls = sample(urls, 12)
 
     # split urls into num_cores chunks
     num_cores = cpu_count() - 1
