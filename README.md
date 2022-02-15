@@ -4,7 +4,6 @@
 
 fish shell "watch": `while true; cat output/contemporanul/contemporanul-articles.jsonl | wc -l; sleep 3; end`
 
-
 cat without word wrap: `cat output/mytex/articles-mytex.jsonl | cut -c1-180 | less`
 
 unique urls: `cat input/articles-mytex.txt | sort | uniq | wc -l`
@@ -28,6 +27,15 @@ for f in (ls -1 txt/*.txt)
   echo $flang" = "$f
 end
 ```
+
+px: ps and top for Human Beings: https://github.com/walles/px
+
+## python libs to use:
+
+- https://realpython.com/python-deque/
+- https://aiocache.readthedocs.io/en/latest/
+- https://asyncstdlib.readthedocs.io/en/latest/source/api/asynctools.html
+- https://www.encode.io/databases/
 
 
 ### playwright
