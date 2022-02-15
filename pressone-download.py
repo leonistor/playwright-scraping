@@ -53,18 +53,25 @@ def parse_article(soup: BeautifulSoup):
         for elem in content_tag.children:
             content.append(elem.get_text())
 
-    published_tag = soup.select_one(".info-bar .date")
+    category_tag = soup.select_one(
+        'div[class^="DefaultFormatShell__Meta"] a[class^="HeadingLabel"]'
+    )
+    category = (
+        category_tag.get_text() if category_tag is not None else "[scrape] no category"
+    )
+    published_tag = soup.select_one(".common__Date-sc-dffrbw-2")
     published = (
         published_tag.get_text()
         if published_tag is not None
         else "[scrape] no published date"
     )
-    author_tag = soup.select_one(".article-tags")
+    author_tag = soup.select_one('div[class^="AuthorCard__Content"] strong')
     author = author_tag.get_text() if author_tag is not None else "[scrape] no author"
 
     article.update(
         {
             "title": title.strip(),
+            "category": category.strip(),
             "content": content,
             "published": published.strip(),
             "author": author.strip(),
