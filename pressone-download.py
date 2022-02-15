@@ -22,6 +22,7 @@ import logging
 """ const """
 INPUT_URLS = "input/articles-pressone.txt"
 OUTFILE = "output/pressone/articles-pressone.jsonl"
+OUTDIR = "output/pressone/img/"
 MAX_NUM_CONNECTIONS = 4
 MAX_TIMEOUT = 30000
 UA_HEADERS = {
@@ -39,6 +40,18 @@ logging.basicConfig(
 async def delay(lo=3000, delta=3000):
     """Async delay for random miliseconds"""
     await asyncio.sleep(randint(lo, lo + delta) / 1000)
+
+
+async def save_image(session, outdir: str, image_url: str, image_file: str):
+    await delay()
+    async with session.get(
+        image_url,
+        headers=UA_HEADERS,
+    ) as resp:
+        if resp.status == 200:
+            fimg = await aiofiles.open(f"{outdir}{image_file}", "wb")
+            await fimg.write(await resp.read())
+            await fimg.close()
 
 
 def parse_article(soup: BeautifulSoup):
@@ -68,6 +81,24 @@ def parse_article(soup: BeautifulSoup):
     author_tag = soup.select_one('div[class^="AuthorCard__Content"] strong')
     author = author_tag.get_text() if author_tag is not None else "[scrape] no author"
 
+    featured_image_tag = soup.select_one(
+        'div[class^="DefaultArticleType__FeaturedImage"] img'
+    )
+    featured_image = "n/a"
+    if featured_image_tag:
+        img_url = featured_image_tag.get("src")
+        if isinstance(img_url, str):
+            featured_image = img_url
+
+    # figure_imgs = soup.select("figure img")
+    # debug(figure_imgs)
+    # for figure_img in figure_imgs:
+    #     img_url = figure_img.get("src")
+    #     debug(img_url)
+    #     if isinstance(img_url, str):
+    #         imgs.append(img_url)
+    # debug(imgs)
+
     article.update(
         {
             "title": title.strip(),
@@ -75,6 +106,7 @@ def parse_article(soup: BeautifulSoup):
             "content": content,
             "published": published.strip(),
             "author": author.strip(),
+            "featured_image": featured_image,
         }
     )
     return article
@@ -99,6 +131,7 @@ async def scrape_article(
             "status": status,
         }
         if status == 200:
+            # logging.info(f"--- url:{url}")
             soup = BeautifulSoup(await resp.text(), "lxml")
             article_data = parse_article(soup)
             article.update(**article_data)
@@ -106,6 +139,15 @@ async def scrape_article(
             logging.error(f"article: status: {status}, url:{url}")
 
         writer.write(article)
+        if "featured_image" in article and article["featured_image"] != "n/a":
+            image_url = article["featured_image"]
+            image_file = "_".join(image_url.split("/")[5:])
+            await save_image(
+                session=session,
+                outdir=OUTDIR,
+                image_url=image_url,
+                image_file=image_file,
+            )
 
     return {"status": status, "url": url}
     # -
@@ -161,7 +203,7 @@ def main():
         urls = f.read().splitlines()
 
     # DEBUG
-    urls = sample(urls, 12)
+    # urls = sample(urls, 12)
 
     # split urls into num_cores chunks
     num_cores = cpu_count() - 1
