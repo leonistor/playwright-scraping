@@ -36,3 +36,10 @@ unique urls:
 ```bash
 cat input/articles-mytex.txt | sort | uniq -u | wc -l
 ```
+
+## TODO
+
+- https://www.catavencii.ro/
+- https://www.biziday.ro/
+- https://www.veridica.ro/ro
+- cu abonament pt arhiva: https://newsweek.ro/
